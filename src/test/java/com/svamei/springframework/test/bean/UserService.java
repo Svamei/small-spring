@@ -1,4 +1,4 @@
-package cn.bugstack.springframework.test.bean;
+package com.svamei.springframework.test.bean;
 
 /**
  * @ClassName UserService
