@@ -9,6 +9,9 @@ package com.svamei.springframework.test.bean;
 public class UserService {
 
     private String name;
+    private String uId;
+
+    private UserDao userDao;
 
     public UserService() {
     }
@@ -18,7 +21,7 @@ public class UserService {
     }
 
     public void queryUserInfo(){
-        System.out.println("查询用户信息");
+        System.out.println("查询" + name + "信息:" + userDao.queryUserName(uId));
     }
 
     @Override
