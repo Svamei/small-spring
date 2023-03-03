@@ -3,6 +3,7 @@ package com.svamei.springframework.test;
 import com.svamei.springframework.beans.factory.BeanFactory;
 import com.svamei.springframework.beans.factory.config.BeanDefinition;
 import com.svamei.springframework.beans.factory.support.DefaultListableBeanFactory;
+import com.svamei.springframework.beans.factory.support.SimpleInstantiationStrategy;
 import com.svamei.springframework.test.bean.UserService;
 
 import org.junit.Test;
@@ -25,8 +26,12 @@ public class ApiTest {
         // 注册Bean
         beanFactory.registerBeanDefinition("userService", userServiceBeanDefinition);
 
+        //实例化策略使用JDK反射
+        beanFactory.setInstantiationStrategy(new SimpleInstantiationStrategy());
+
         // 获取Bean
-        UserService userService = (UserService) beanFactory.getBean("userService");
+        UserService userService = (UserService) beanFactory.getBean("userService", "Svamei");
+        //UserService userService = (UserService) beanFactory.getBean("userService");
         System.out.println(userService);
         userService.queryUserInfo();
 
