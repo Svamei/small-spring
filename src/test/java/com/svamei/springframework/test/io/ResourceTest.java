@@ -1,8 +1,11 @@
 package com.svamei.springframework.test.io;
 
 import cn.hutool.core.io.IoUtil;
+import com.svamei.springframework.beans.factory.support.DefaultListableBeanFactory;
+import com.svamei.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import com.svamei.springframework.io.DefaultResourceLoader;
 import com.svamei.springframework.io.Resource;
+import com.svamei.springframework.test.bean.UserService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,5 +48,15 @@ public class ResourceTest {
         InputStream inputStream = resource.getInputStream();
         String content = IoUtil.readUtf8(inputStream);
         System.out.println(content);
+    }
+
+    @Test
+    public void test_xml() {
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
+        beanDefinitionReader.loadBeanDefinitions("classpath:spring.xml");
+
+        UserService userService = beanFactory.getBean("userService", UserService.class);
+        userService.queryUserInfo();
     }
 }
