@@ -20,6 +20,10 @@ public class UserService {
         this.name = name;
     }
 
+    public void setuId(String uId) {
+        this.uId = uId;
+    }
+
     public void queryUserInfo(){
         System.out.println("查询" + name + "信息:" + userDao.queryUserName(uId));
     }

@@ -7,6 +7,7 @@ import com.svamei.springframework.beans.factory.config.BeanDefinition;
 import com.svamei.springframework.beans.factory.config.BeanReference;
 import com.svamei.springframework.beans.factory.support.DefaultListableBeanFactory;
 import com.svamei.springframework.beans.factory.support.SimpleInstantiationStrategy;
+import com.svamei.springframework.context.spport.ClassPathXmlApplicationContext;
 import com.svamei.springframework.test.bean.UserDao;
 import com.svamei.springframework.test.bean.UserService;
 
@@ -72,6 +73,14 @@ public class ApiTest {
         UserService userService = (UserService) beanFactory.getBean("userService", "Svamei");
         //UserService userService = (UserService) beanFactory.getBean("userService");
         System.out.println(userService);
+        userService.queryUserInfo();
+    }
+
+    @Test
+    public void testXmlApplicationContext() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        // 2. 获取Bean对象调用方法
+        UserService userService = applicationContext.getBean("userService", UserService.class);
         userService.queryUserInfo();
     }
 }
