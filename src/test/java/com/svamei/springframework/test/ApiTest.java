@@ -79,6 +79,7 @@ public class ApiTest {
     @Test
     public void testXmlApplicationContext() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        applicationContext.registerShutdownHook();
         // 2. 获取Bean对象调用方法
         UserService userService = applicationContext.getBean("userService", UserService.class);
         userService.queryUserInfo();
