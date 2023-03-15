@@ -2,6 +2,7 @@ package com.svamei.springframework.beans.factory.support;
 
 import com.svamei.springframework.beans.BeansException;
 import com.svamei.springframework.beans.factory.BeanFactory;
+import com.svamei.springframework.beans.factory.FactoryBean;
 import com.svamei.springframework.beans.factory.config.BeanDefinition;
 import com.svamei.springframework.beans.factory.config.BeanPostProcessor;
 import com.svamei.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -16,7 +17,7 @@ import java.util.List;
  * @Author Svamei
  * @Date 10:59 2023/3/1
  **/
-public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
+public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport implements ConfigurableBeanFactory {
 
     /** BeanPostProcessors to apply in createBean */
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
@@ -26,7 +27,7 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
 
     @Override
     public Object getBean(String beanName) throws BeansException {
-        return getBean(beanName, (Object) null);
+        return doGetBean(beanName, null);
     }
 
     @Override
@@ -36,20 +37,40 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
 
     @Override
     public Object getBean(String beanName, Object... args) throws BeansException {
-        Object singleton = getSingleton(beanName);
 
-        if (singleton != null) {
-            return singleton;
-        }
-
-        BeanDefinition beanDefinition = getBeanDefinition(beanName);
-        return createBean(beanName, beanDefinition, args);
+        return doGetBean(beanName, args);
     }
 
     @Override
     public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
         this.beanPostProcessors.remove(beanPostProcessor);
         this.beanPostProcessors.add(beanPostProcessor);
+    }
+
+    protected <T> T doGetBean(String name, Object[] args) {
+        Object sharedInstance = getSingleton(name);
+        if (sharedInstance != null) {
+            return (T) getObjectForBeanInstance(sharedInstance, name);
+        }
+
+        BeanDefinition beanDefinition = getBeanDefinition(name);
+        Object bean = createBean(name, beanDefinition, args);
+        return (T) getObjectForBeanInstance(bean, name);
+    }
+
+    private Object getObjectForBeanInstance(Object beanInstance, String beanName) {
+        if (!(beanInstance instanceof FactoryBean)) {
+            return beanInstance;
+        }
+
+        Object object = getCachedObjectForFactoryBean(beanName);
+
+        if (object == null) {
+            FactoryBean<?> factoryBean = (FactoryBean<?>) beanInstance;
+            object = getObjectFromFactoryBean(factoryBean, beanName);
+        }
+
+        return object;
     }
 
     public List<BeanPostProcessor> getBeanPostProcessors() {

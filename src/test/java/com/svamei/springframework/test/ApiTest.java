@@ -8,9 +8,12 @@ import com.svamei.springframework.beans.factory.config.BeanReference;
 import com.svamei.springframework.beans.factory.support.DefaultListableBeanFactory;
 import com.svamei.springframework.beans.factory.support.SimpleInstantiationStrategy;
 import com.svamei.springframework.context.spport.ClassPathXmlApplicationContext;
+import com.svamei.springframework.test.bean.ProxyBeanFactory;
 import com.svamei.springframework.test.bean.UserDao;
 import com.svamei.springframework.test.bean.UserService;
 
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.NoOp;
 import org.junit.Test;
 
 /**
@@ -96,5 +99,44 @@ public class ApiTest {
         userService.queryUserInfo();
         System.out.println("ApplicationContextAware："+userService.getApplicationContext());
         System.out.println("BeanFactoryAware："+userService.getBeanFactory());
+    }
+
+    @Test
+    public void testPrototype() {
+        // 1.初始化 BeanFactory
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        applicationContext.registerShutdownHook();
+
+        // 2. 获取Bean对象调用方法
+        UserService userService01 = applicationContext.getBean("userService", UserService.class);
+        UserService userService02 = applicationContext.getBean("userService", UserService.class);
+
+        // 3. 配置 scope="prototype/singleton"
+        System.out.println(userService01.hashCode());
+        System.out.println(userService02.hashCode());
+
+        userService01.queryUserInfo();
+
+//        // 4. 打印十六进制哈希
+//        System.out.println(userService01 + " 十六进制哈希：" + Integer.toHexString(userService01.hashCode()));
+//        System.out.println(ClassLayout.parseInstance(userService01).toPrintable());
+
+    }
+
+    @Test
+    public void testEnhance() throws Exception {
+//        Enhancer enhancer = new Enhancer();
+//        enhancer.setSuperclass(ProxyBeanFactory.class);
+//        enhancer.setCallback(new NoOp() {
+//            @Override
+//            public int hashCode() {
+//                return super.hashCode();
+//            }
+//        });
+//        Object o = enhancer.create();
+
+        ProxyBeanFactory proxyBeanFactory = new ProxyBeanFactory();
+        UserDao object = proxyBeanFactory.getObject();
+        System.out.println(object.queryUserName("323"));
     }
 }

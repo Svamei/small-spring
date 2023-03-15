@@ -11,7 +11,7 @@ import java.util.Map;
  **/
 public class UserDao {
 
-    private static Map<String, String> map = new HashMap<>();
+    public static Map<String, String> map = new HashMap<>();
 
     public void initData() {
         System.out.println("执行：init-method");
