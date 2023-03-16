@@ -1,5 +1,6 @@
 package com.svamei.springframework.test;
 
+import com.sun.applet2.preloader.event.ApplicationExitEvent;
 import com.svamei.springframework.beans.PropertyValue;
 import com.svamei.springframework.beans.PropertyValues;
 import com.svamei.springframework.beans.factory.BeanFactory;
@@ -7,11 +8,14 @@ import com.svamei.springframework.beans.factory.config.BeanDefinition;
 import com.svamei.springframework.beans.factory.config.BeanReference;
 import com.svamei.springframework.beans.factory.support.DefaultListableBeanFactory;
 import com.svamei.springframework.beans.factory.support.SimpleInstantiationStrategy;
+import com.svamei.springframework.context.ApplicationListener;
+import com.svamei.springframework.context.event.ContextClosedEvent;
 import com.svamei.springframework.context.spport.ClassPathXmlApplicationContext;
 import com.svamei.springframework.test.bean.ProxyBeanFactory;
 import com.svamei.springframework.test.bean.UserDao;
 import com.svamei.springframework.test.bean.UserService;
 
+import com.svamei.springframework.test.event.CustomEvent;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.NoOp;
 import org.junit.Test;
@@ -138,5 +142,19 @@ public class ApiTest {
         ProxyBeanFactory proxyBeanFactory = new ProxyBeanFactory();
         UserDao object = proxyBeanFactory.getObject();
         System.out.println(object.queryUserName("323"));
+    }
+
+    @Test
+    public void testReflect() {
+        Class<ApplicationListener> applicationListenerClass = ApplicationListener.class;
+        applicationListenerClass.getGenericInterfaces();
+    }
+
+    @Test
+    public void testEvent() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        applicationContext.publishEvent(new CustomEvent(applicationContext, 1019129009086763L, "成功了！"));
+
+        applicationContext.registerShutdownHook();
     }
 }
