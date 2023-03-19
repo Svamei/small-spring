@@ -5,13 +5,18 @@ import com.svamei.springframework.beans.factory.*;
 import com.svamei.springframework.context.ApplicationContext;
 import com.svamei.springframework.context.ApplicationContextAware;
 
+import java.util.Random;
+
 /**
  * @ClassName UserService
  * @Description
  * @Author Svamei
  * @Date 9:06 2023/3/1
  **/
-public class UserService implements InitializingBean, DisposableBean, BeanNameAware, BeanClassLoaderAware, ApplicationContextAware, BeanFactoryAware {
+public class UserService implements IUserService, BeanNameAware
+    //, InitializingBean, DisposableBean, BeanNameAware, BeanClassLoaderAware, ApplicationContextAware, BeanFactoryAware
+
+{
 
     private String name;
     private String uId;
@@ -33,7 +38,22 @@ public class UserService implements InitializingBean, DisposableBean, BeanNameAw
     }
 
     public void queryUserInfo(){
-        System.out.println("查询" + name + "信息:" + userDao.queryUserName(uId));
+        try {
+            Thread.sleep(new Random(1).nextInt(100));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("查询" + name + "信息:" + beanFactory);
+    }
+
+    public String register(String userName) {
+        try {
+            Thread.sleep(new Random(1).nextInt(100));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "注册用户：" + userName + " success！";
     }
 
     @Override
@@ -43,32 +63,26 @@ public class UserService implements InitializingBean, DisposableBean, BeanNameAw
                 '}';
     }
 
-    @Override
     public void destroy() throws Exception {
         System.out.println("执行：UserService.destroy");
     }
 
-    @Override
     public void afterPropertiesSet() throws Exception {
         System.out.println("执行：UserService.afterPropertiesSet");
     }
 
-    @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
     }
 
-    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    @Override
     public void setBeanName(String name) {
         System.out.println("Bean Name is：" + name);
     }
 
-    @Override
     public void setBeanClassLoader(ClassLoader classLoader) {
         System.out.println("ClassLoader：" + classLoader);
     }

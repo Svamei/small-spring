@@ -6,10 +6,7 @@ import com.svamei.springframework.beans.BeansException;
 import com.svamei.springframework.beans.PropertyValue;
 import com.svamei.springframework.beans.PropertyValues;
 import com.svamei.springframework.beans.factory.*;
-import com.svamei.springframework.beans.factory.config.AutoWireCapableBeanFactory;
-import com.svamei.springframework.beans.factory.config.BeanDefinition;
-import com.svamei.springframework.beans.factory.config.BeanPostProcessor;
-import com.svamei.springframework.beans.factory.config.BeanReference;
+import com.svamei.springframework.beans.factory.config.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -35,7 +32,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     @Override
     protected Object createBean(String beanName, BeanDefinition beanDefinition, Object[] args) throws BeansException {
 
-        Object bean = createBeanInstance(beanDefinition, beanName, args);
+        // 判断是否返回代理 Bean 对象
+        Object bean = resolveBeforeInstantiation(beanName, beanDefinition);
+        if (null != bean) {
+            return bean;
+        }
+
+        bean = createBeanInstance(beanDefinition, beanName, args);
         applyPropertyValues(beanName, bean, beanDefinition);
 
         bean = initializeBean(beanName, bean, beanDefinition);
@@ -46,6 +49,29 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             addSingleton(beanName, bean);
         }
         return bean;
+    }
+
+    protected Object resolveBeforeInstantiation(String name, BeanDefinition beanDefinition) {
+        Object bean = applyBeanPostProcessorsBeforeInitialization(beanDefinition.getBeanClass(), name);
+
+        if (null != bean) {
+            bean = applyBeanPostProcessorsAfterInitialization(bean, name);
+        }
+
+        return bean;
+    }
+
+    public Object applyBeanPostProcessorsBeforeInitialization(Class<?> beanClass, String beanName) {
+
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                Object bean = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessBeforeInitialization(beanClass, beanName);
+                if (null != bean) {
+                    return bean;
+                }
+            }
+        }
+        return null;
     }
 
     protected void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition beanDefinition) {

@@ -1,6 +1,11 @@
 package com.svamei.springframework.test;
 
 import com.sun.applet2.preloader.event.ApplicationExitEvent;
+import com.svamei.springframework.aop.AdvisedSupport;
+import com.svamei.springframework.aop.TargetSource;
+import com.svamei.springframework.aop.aspectj.AspectJExpressionPointcut;
+import com.svamei.springframework.aop.framework.Cglib2AopProxy;
+import com.svamei.springframework.aop.framework.JdkDynamicAopProxy;
 import com.svamei.springframework.beans.PropertyValue;
 import com.svamei.springframework.beans.PropertyValues;
 import com.svamei.springframework.beans.factory.BeanFactory;
@@ -11,14 +16,18 @@ import com.svamei.springframework.beans.factory.support.SimpleInstantiationStrat
 import com.svamei.springframework.context.ApplicationListener;
 import com.svamei.springframework.context.event.ContextClosedEvent;
 import com.svamei.springframework.context.spport.ClassPathXmlApplicationContext;
+import com.svamei.springframework.test.bean.IUserService;
 import com.svamei.springframework.test.bean.ProxyBeanFactory;
 import com.svamei.springframework.test.bean.UserDao;
 import com.svamei.springframework.test.bean.UserService;
 
 import com.svamei.springframework.test.event.CustomEvent;
+import com.svamei.springframework.test.interceptor.UserServiceInterceptor;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.NoOp;
 import org.junit.Test;
+
+import java.lang.reflect.Method;
 
 /**
  * @ClassName ApiTest
@@ -157,4 +166,39 @@ public class ApiTest {
 
         applicationContext.registerShutdownHook();
     }
+
+    @Test
+    public void testAop() throws NoSuchMethodException {
+//        AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut("execution(* com.svamei.springframework.test.bean.UserService.*(..))");
+//        Class<UserService> clazz = UserService.class;
+//        Method method = clazz.getDeclaredMethod("queryUserInfo");
+//
+//        System.out.println(pointcut.matches(clazz));
+//        System.out.println(pointcut.matches(method, clazz));
+
+        UserService userService = new UserService();
+
+        AdvisedSupport advised1 = new AdvisedSupport();
+        advised1.setTargetSource(new TargetSource(userService));
+        advised1.setInterceptor(new UserServiceInterceptor());
+        advised1.setMethodMatcher(new AspectJExpressionPointcut("execution(* *.queryUserInfo(..))"));
+
+//        IUserService proxy_jdk  = (IUserService) new JdkDynamicAopProxy(advised).getProxy();
+//        proxy_jdk.queryUserInfo();
+        System.out.println(">>>>>>>>>>>");
+        //System.out.println(proxy_jdk.register("kkkkkkjj"));
+
+        IUserService proxy_cglib = (IUserService) new Cglib2AopProxy(advised1).getProxy();
+        // 测试调用
+        proxy_cglib.queryUserInfo();
+    }
+
+    @Test
+    public void test_aop() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        IUserService userService = applicationContext.getBean("userService", IUserService.class);
+        userService.queryUserInfo();
+    }
+
+
 }

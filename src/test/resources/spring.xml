@@ -1,21 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans>
 
-<!--    <bean id="userDao" class="com.svamei.springframework.test.bean.UserDao" init-method="initData" destroy-method="destroyData"/>-->
+<!--    <bean id="userDao" class="com.svamei.springframework.test.bean.UserDao"/>-->
 <!--    <bean id="proxyUserDao" class="com.svamei.springframework.test.bean.ProxyBeanFactory"/>-->
-<!--    <bean id="userService" class="com.svamei.springframework.test.bean.UserService" scope="prototype">-->
+    <bean id="userService" class="com.svamei.springframework.test.bean.UserService" scope="prototype">
 <!--        <property name="name" value="svamei"/>-->
 <!--        <property name="uId" value="323"/>-->
-<!--        <property name="userDao" ref="proxyUserDao"/>-->
-<!--    </bean>-->
+<!--        <property name="userDao" ref="userDao"/>-->
+    </bean>
 
 <!--    <bean class="com.svamei.springframework.test.common.MyBeanPostProcessor"/>-->
 <!--    <bean class="com.svamei.springframework.test.common.MyBeanFactoryPostProcessor"/>-->
 
-    <bean class="com.svamei.springframework.test.event.ContextRefreshEventListener"/>
+<!--    <bean class="com.svamei.springframework.test.event.ContextRefreshEventListener"/>-->
 
-    <bean class="com.svamei.springframework.test.event.CustomEventListener"/>
+<!--    <bean class="com.svamei.springframework.test.event.CustomEventListener"/>-->
 
 <!--    <bean class="cn.bugstack.springframework.test.event.ContextClosedEventListener"/>-->
+
+    <bean class="com.svamei.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+
+    <bean id="beforeAdvice" class="com.svamei.springframework.test.interceptor.UserServiceBeforeAdvice"/>
+
+    <bean id="methodInterceptor" class="com.svamei.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor">
+        <property name="advice" ref="beforeAdvice"/>
+    </bean>
+
+    <bean id="pointcutAdvisor" class="com.svamei.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor">
+        <property name="expression" value="execution(* *.*(..))"/>
+        <property name="advice" ref="methodInterceptor"/>
+    </bean>
 
 </beans>
