@@ -44,7 +44,7 @@ public class UserService implements IUserService, BeanNameAware
             e.printStackTrace();
         }
 
-        System.out.println("查询" + name + "信息:" + beanFactory);
+        System.out.println("查询" + name + "信息:" );
     }
 
     public String register(String userName) {
@@ -68,7 +68,7 @@ public class UserService implements IUserService, BeanNameAware
     }
 
     public void afterPropertiesSet() throws Exception {
-        System.out.println("执行：UserService.afterPropertiesSet");
+        System.out.println("执行：UserService.afterPropertiesSet 初始化");
     }
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {

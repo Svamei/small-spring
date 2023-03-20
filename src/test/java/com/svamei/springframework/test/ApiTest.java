@@ -13,6 +13,7 @@ import com.svamei.springframework.beans.factory.config.BeanDefinition;
 import com.svamei.springframework.beans.factory.config.BeanReference;
 import com.svamei.springframework.beans.factory.support.DefaultListableBeanFactory;
 import com.svamei.springframework.beans.factory.support.SimpleInstantiationStrategy;
+import com.svamei.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import com.svamei.springframework.context.ApplicationListener;
 import com.svamei.springframework.context.event.ContextClosedEvent;
 import com.svamei.springframework.context.spport.ClassPathXmlApplicationContext;
@@ -196,8 +197,17 @@ public class ApiTest {
     @Test
     public void test_aop() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        IUserService userService = applicationContext.getBean("userService", IUserService.class);
+        IUserService userService = (IUserService) applicationContext.getBean("userService");
         userService.queryUserInfo();
+    }
+
+    @Test
+    public void testXML() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        UserService userService = applicationContext.getBean("userService", UserService.class);
+        userService.queryUserInfo();
+
+
     }
 
 

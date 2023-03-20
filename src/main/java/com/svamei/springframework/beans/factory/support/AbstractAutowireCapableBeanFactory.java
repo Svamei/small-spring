@@ -52,7 +52,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     protected Object resolveBeforeInstantiation(String name, BeanDefinition beanDefinition) {
-        Object bean = applyBeanPostProcessorsBeforeInitialization(beanDefinition.getBeanClass(), name);
+        Object bean = applyBeanPostProcessorsBeforeInstantiation(beanDefinition.getBeanClass(), name);
 
         if (null != bean) {
             bean = applyBeanPostProcessorsAfterInitialization(bean, name);
@@ -61,11 +61,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return bean;
     }
 
-    public Object applyBeanPostProcessorsBeforeInitialization(Class<?> beanClass, String beanName) {
+    public Object applyBeanPostProcessorsBeforeInstantiation(Class<?> beanClass, String beanName) {
 
         for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
             if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
-                Object bean = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessBeforeInitialization(beanClass, beanName);
+                Object bean = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessBeforeInstantiation(beanClass, beanName);
                 if (null != bean) {
                     return bean;
                 }
