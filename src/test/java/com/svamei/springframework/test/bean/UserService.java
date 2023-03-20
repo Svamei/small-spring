@@ -2,8 +2,11 @@ package com.svamei.springframework.test.bean;
 
 import com.svamei.springframework.beans.BeansException;
 import com.svamei.springframework.beans.factory.*;
+import com.svamei.springframework.beans.factory.annotation.Autowired;
+import com.svamei.springframework.beans.factory.annotation.Value;
 import com.svamei.springframework.context.ApplicationContext;
 import com.svamei.springframework.context.ApplicationContextAware;
+import com.svamei.springframework.stereotype.Component;
 
 import java.util.Random;
 
@@ -13,14 +16,18 @@ import java.util.Random;
  * @Author Svamei
  * @Date 9:06 2023/3/1
  **/
+
+@Component
 public class UserService implements IUserService, BeanNameAware
     //, InitializingBean, DisposableBean, BeanNameAware, BeanClassLoaderAware, ApplicationContextAware, BeanFactoryAware
 
 {
 
+    @Value("${tok1en}")
     private String name;
     private String uId;
 
+    @Autowired
     private UserDao userDao;
 
     private ApplicationContext applicationContext;
@@ -44,7 +51,7 @@ public class UserService implements IUserService, BeanNameAware
             e.printStackTrace();
         }
 
-        System.out.println("查询" + name + "信息:" );
+        System.out.println("查询" + name + "信息:" + userDao.queryUserName("dd"));
     }
 
     public String register(String userName) {

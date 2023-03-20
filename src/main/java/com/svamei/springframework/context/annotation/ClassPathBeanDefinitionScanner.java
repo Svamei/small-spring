@@ -1,6 +1,7 @@
 package com.svamei.springframework.context.annotation;
 
 import cn.hutool.core.util.StrUtil;
+import com.svamei.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import com.svamei.springframework.beans.factory.config.BeanDefinition;
 import com.svamei.springframework.beans.factory.support.BeanDefinitionRegistry;
 import com.svamei.springframework.stereotype.Component;
@@ -33,6 +34,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
                 registry.registerBeanDefinition(determineBeanName(definition), definition);
             }
         }
+        registry.registerBeanDefinition("cn.bugstack.springframework.context.annotation.internalAutowiredAnnotationProcessor", new BeanDefinition(AutowiredAnnotationBeanPostProcessor.class));
     }
 
     private String resolveBeanScope(BeanDefinition definition) {

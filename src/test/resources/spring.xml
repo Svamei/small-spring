@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans>
 
-<!--    <component-scan base-package="com.svamei.springframework.test" />-->
+    <component-scan base-package="com.svamei.springframework.test" />
 
-    <bean id="userDao" class="com.svamei.springframework.test.bean.UserDao"/>
+<!--    <bean id="userDao" class="com.svamei.springframework.test.bean.UserDao"/>-->
 <!--&lt;!&ndash;    <bean id="proxyUserDao" class="com.svamei.springframework.test.bean.ProxyBeanFactory"/>&ndash;&gt;-->
-    <bean id="userService" class="com.svamei.springframework.test.bean.UserService">
-        <property name="name" value="svamei"/>
-        <property name="uId" value="323"/>
-        <property name="userDao" ref="userDao"/>
-    </bean>
+<!--    <bean id="userService" class="com.svamei.springframework.test.bean.UserService">-->
+<!--        <property name="name" value="svamei"/>-->
+<!--        <property name="uId" value="323"/>-->
+<!--        <property name="userDao" ref="userDao"/>-->
+<!--    </bean>-->
 
 <!--&lt;!&ndash;    <bean class="com.svamei.springframework.test.common.MyBeanPostProcessor"/>&ndash;&gt;-->
 <!--&lt;!&ndash;    <bean class="com.svamei.springframework.test.common.MyBeanFactoryPostProcessor"/>&ndash;&gt;-->
@@ -20,22 +20,22 @@
 
 <!--&lt;!&ndash;    <bean class="cn.bugstack.springframework.test.event.ContextClosedEventListener"/>&ndash;&gt;-->
 
-    <bean class="com.svamei.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+<!--    <bean class="com.svamei.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>-->
 
-    <bean id="beforeAdvice" class="com.svamei.springframework.test.interceptor.UserServiceBeforeAdvice"/>
+<!--    <bean id="beforeAdvice" class="com.svamei.springframework.test.interceptor.UserServiceBeforeAdvice"/>-->
 
-    <bean id="methodInterceptor" class="com.svamei.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor">
-        <property name="advice" ref="beforeAdvice"/>
-    </bean>
-
-    <bean id="pointcutAdvisor" class="com.svamei.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor">
-        <property name="expression" value="execution(* *.*(..))"/>
-        <property name="advice" ref="methodInterceptor"/>
-    </bean>
-
-<!--    <bean class="com.svamei.springframework.beans.factory.PropertyPlaceholderConfigurer">-->
-<!--        <property name="location" value="classpath:important.properties"/>-->
+<!--    <bean id="methodInterceptor" class="com.svamei.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor">-->
+<!--        <property name="advice" ref="beforeAdvice"/>-->
 <!--    </bean>-->
+
+<!--    <bean id="pointcutAdvisor" class="com.svamei.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor">-->
+<!--        <property name="expression" value="execution(* *.*(..))"/>-->
+<!--        <property name="advice" ref="methodInterceptor"/>-->
+<!--    </bean>-->
+
+    <bean class="com.svamei.springframework.beans.factory.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:important.properties"/>
+    </bean>
 
 <!--    <bean id="userService" class="com.svamei.springframework.test.bean.UserService">-->
 <!--        <property name="name" value="${token}"/>-->
