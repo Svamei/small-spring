@@ -9,6 +9,7 @@ import com.svamei.springframework.beans.factory.BeanFactory;
 import com.svamei.springframework.beans.factory.BeanFactoryAware;
 import com.svamei.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import com.svamei.springframework.beans.factory.support.DefaultListableBeanFactory;
+import com.svamei.springframework.util.ClassUtils;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 
@@ -32,35 +33,12 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-        if (isInfrastructureClass(beanClass)) {
-            return null;
-        }
-
-        Collection<AspectJExpressionPointcutAdvisor> advisors = beanFactory.getBeansOfType(AspectJExpressionPointcutAdvisor.class).values();
-        
-        for (AspectJExpressionPointcutAdvisor advisor : advisors) {
-            ClassFilter classFilter = advisor.getPointcut().getClassFilter();
-            if (!classFilter.matches(beanClass)) {
-                continue;
-            }
-
-            AdvisedSupport advised = new AdvisedSupport();
-
-            TargetSource targetSource = null;
-            try {
-                targetSource = new TargetSource(beanClass.getDeclaredConstructor().newInstance());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            advised.setTargetSource(targetSource);
-            advised.setInterceptor((MethodInterceptor) advisor.getAdvice());
-            advised.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
-            advised.setProxyTargetClass(true);
-
-            return new ProxyFactory(advised).getProxy();
-        }
         return null;
+    }
+
+    @Override
+    public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
+        return true;
     }
 
     @Override
@@ -80,6 +58,40 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        Class beanClass = bean.getClass();
+
+        if (isInfrastructureClass(beanClass)) {
+            return bean;
+        }
+
+        Collection<AspectJExpressionPointcutAdvisor> advisors = beanFactory.getBeansOfType(AspectJExpressionPointcutAdvisor.class).values();
+
+        for (AspectJExpressionPointcutAdvisor advisor : advisors) {
+            ClassFilter classFilter = advisor.getPointcut().getClassFilter();
+            if (!classFilter.matches(beanClass)) {
+                continue;
+            }
+
+            AdvisedSupport advised = new AdvisedSupport();
+
+            TargetSource targetSource = null;
+            try {
+                targetSource = new TargetSource(bean);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            advised.setTargetSource(targetSource);
+            advised.setInterceptor((MethodInterceptor) advisor.getAdvice());
+            advised.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
+
+            if (beanClass.getInterfaces().length == 0) {
+                advised.setProxyTargetClass(true);
+            }
+
+
+            return new ProxyFactory(advised).getProxy();
+        }
         return bean;
     }
 }

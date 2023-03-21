@@ -197,6 +197,7 @@ public class ApiTest {
     @Test
     public void test_aop() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+
         IUserService userService = (IUserService) applicationContext.getBean("userService");
         userService.queryUserInfo();
     }

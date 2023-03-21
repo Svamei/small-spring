@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
  **/
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory implements AutoWireCapableBeanFactory {
 
-    private InstantiationStrategy instantiationStrategy = new CglibSubclassingInstantiationStrategy();
+    private InstantiationStrategy instantiationStrategy = new SimpleInstantiationStrategy();
 
     public InstantiationStrategy getInstantiationStrategy() {
         return instantiationStrategy;
@@ -40,6 +40,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         bean = createBeanInstance(beanDefinition, beanName, args);
 
+        boolean continueWithPropertyPopulation = applyBeanPostProcessorsAfterInstantiation(beanName, bean);
+        if (!continueWithPropertyPopulation) {
+            return bean;
+        }
+
         applyBeanPostProcessorsBeforeApplyingPropertyValues(beanName, bean, beanDefinition);
 
         applyPropertyValues(beanName, bean, beanDefinition);
@@ -54,10 +59,25 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return bean;
     }
 
+    protected boolean applyBeanPostProcessorsAfterInstantiation(String name, Object bean) {
+        boolean continueWithPropertyPopulation = true;
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                InstantiationAwareBeanPostProcessor instantiationAwareBeanPostProcessor = (InstantiationAwareBeanPostProcessor) beanPostProcessor;
+                if (!instantiationAwareBeanPostProcessor.postProcessAfterInstantiation(bean, name)) {
+                    continueWithPropertyPopulation = false;
+                    break;
+                }
+            }
+        }
+        return continueWithPropertyPopulation;
+    }
+
     protected void applyBeanPostProcessorsBeforeApplyingPropertyValues(String name, Object bean, BeanDefinition beanDefinition) {
         for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
             if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor){
-                PropertyValues pvs = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessPropertyValues(beanDefinition.getPropertyValues(), bean, name);
+                PropertyValues pvs = ((InstantiationAwareBeanPostProcessor) beanPostProcessor)
+                        .postProcessPropertyValues(beanDefinition.getPropertyValues(), bean, name);
                 if (null != pvs) {
                     for (PropertyValue propertyValue : pvs.getPropertyValues()) {
                         beanDefinition.getPropertyValues().addPropertyValue(propertyValue);
@@ -170,6 +190,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 break;
             }
         }
+
+        //setInstantiationStrategy(new SimpleInstantiationStrategy());
         return getInstantiationStrategy().instantiate(beanDefinition, beanName, constructorToUse, args);
     }
 

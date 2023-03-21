@@ -13,8 +13,8 @@ import java.util.Map;
  * @Date 11:03 2023/3/3
  **/
 
-@Component
-@Scope("property")
+//@Component
+//@Scope("property")
 public class UserDao {
 
     public static Map<String, String> map = new HashMap<>();

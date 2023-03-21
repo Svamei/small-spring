@@ -23,11 +23,9 @@ public class UserService implements IUserService, BeanNameAware
 
 {
 
-    @Value("${tok1en}")
     private String name;
     private String uId;
 
-    @Autowired
     private UserDao userDao;
 
     private ApplicationContext applicationContext;

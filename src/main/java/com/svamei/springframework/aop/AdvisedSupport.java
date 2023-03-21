@@ -17,7 +17,7 @@ public class AdvisedSupport {
 
     private MethodMatcher methodMatcher;
 
-    private boolean proxyTargetClass;
+    private boolean proxyTargetClass = false;
 
     public boolean isProxyTargetClass() {
         return proxyTargetClass;
