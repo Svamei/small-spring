@@ -2,6 +2,7 @@ package com.svamei.springframework.beans.factory.support;
 
 import com.svamei.springframework.beans.BeansException;
 import com.svamei.springframework.beans.factory.DisposableBean;
+import com.svamei.springframework.beans.factory.ObjectFactory;
 import com.svamei.springframework.beans.factory.config.SingletonBeanRegistry;
 
 import java.util.HashMap;
@@ -17,7 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
-    private Map<String, Object> singletonsMap = new ConcurrentHashMap<>();
+    private final Map<String, Object> singletonsMap = new ConcurrentHashMap<>();
+
+    private final Map<String, Object> earlySingletonObjects = new HashMap<>();
+
+    private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>();
 
     private final Map<String, DisposableBean> disposableBeans = new HashMap<>();
 
@@ -25,7 +30,19 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     @Override
     public Object getSingleton(String beanName) {
-        return singletonsMap.get(beanName);
+        Object singleton = singletonsMap.get(beanName);
+        if (singleton == null) {
+            singleton = earlySingletonObjects.get(beanName);
+            if (singleton == null) {
+                ObjectFactory<?> objectFactory = singletonFactories.get(beanName);
+                if (objectFactory != null) {
+                    singleton = objectFactory.getObject();
+                    earlySingletonObjects.put(beanName, singleton);
+                    singletonFactories.remove(beanName);
+                }
+            }
+        }
+        return singleton;
     }
 
     protected void addSingleton(String beanName, Object bean) {
@@ -55,5 +72,14 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public void registerSingleton(String beanName, Object singletonObject) {
         addSingleton(beanName, singletonObject);
+        earlySingletonObjects.remove(beanName);
+        singletonFactories.remove(beanName);
+    }
+
+    protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
+        if (!this.singletonsMap.containsKey(beanName)) {
+            this.singletonFactories.put(beanName, singletonFactory);
+            this.earlySingletonObjects.remove(beanName);
+        }
     }
 }

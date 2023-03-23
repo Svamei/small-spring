@@ -17,7 +17,7 @@ import java.util.Random;
  * @Date 9:06 2023/3/1
  **/
 
-@Component
+//@Component
 public class UserService implements IUserService, BeanNameAware
     //, InitializingBean, DisposableBean, BeanNameAware, BeanClassLoaderAware, ApplicationContextAware, BeanFactoryAware
 

@@ -17,10 +17,7 @@ import com.svamei.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import com.svamei.springframework.context.ApplicationListener;
 import com.svamei.springframework.context.event.ContextClosedEvent;
 import com.svamei.springframework.context.spport.ClassPathXmlApplicationContext;
-import com.svamei.springframework.test.bean.IUserService;
-import com.svamei.springframework.test.bean.ProxyBeanFactory;
-import com.svamei.springframework.test.bean.UserDao;
-import com.svamei.springframework.test.bean.UserService;
+import com.svamei.springframework.test.bean.*;
 
 import com.svamei.springframework.test.event.CustomEvent;
 import com.svamei.springframework.test.interceptor.UserServiceInterceptor;
@@ -214,6 +211,13 @@ public class ApiTest {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
         UserService userService = applicationContext.getBean("userService", UserService.class);
         userService.queryUserInfo();
+    }
+
+    @Test
+    public void testDepend() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        Wife wife = applicationContext.getBean("wife", Wife.class);
+        wife.queryHusband();
     }
 
 

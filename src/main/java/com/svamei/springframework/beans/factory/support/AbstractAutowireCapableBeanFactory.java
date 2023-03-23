@@ -32,13 +32,23 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     @Override
     protected Object createBean(String beanName, BeanDefinition beanDefinition, Object[] args) throws BeansException {
 
-        // 判断是否返回代理 Bean 对象
+
         Object bean = resolveBeforeInstantiation(beanName, beanDefinition);
         if (null != bean) {
             return bean;
         }
 
         bean = createBeanInstance(beanDefinition, beanName, args);
+
+        if (beanDefinition.isSingleton()) {
+            Object finalBean = bean;
+            addSingletonFactory(beanName, new ObjectFactory<Object>() {
+                @Override
+                public Object getObject() throws BeansException {
+                    return getEarlyBeanReference(beanName, beanDefinition, finalBean);
+                }
+            });
+        }
 
         boolean continueWithPropertyPopulation = applyBeanPostProcessorsAfterInstantiation(beanName, bean);
         if (!continueWithPropertyPopulation) {
@@ -53,12 +63,27 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         registerDisposableBeanIfNecessary(beanName, bean, beanDefinition);
 
+        Object exposedObject = bean;
         if (beanDefinition.isSingleton()) {
-            addSingleton(beanName, bean);
+            exposedObject = getSingleton(beanName);
+            registerSingleton(beanName, exposedObject);
         }
-        return bean;
+        return exposedObject;
     }
 
+    protected Object getEarlyBeanReference(String beanName, BeanDefinition beanDefinition, Object bean) {
+        Object exposeObject = bean;
+
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                exposeObject = ((InstantiationAwareBeanPostProcessor)beanPostProcessor).getEarlyBeanReference(exposeObject, beanName);
+                if (exposeObject == null) {
+                    return null;
+                }
+            }
+        }
+        return exposeObject;
+    }
     protected boolean applyBeanPostProcessorsAfterInstantiation(String name, Object bean) {
         boolean continueWithPropertyPopulation = true;
         for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {

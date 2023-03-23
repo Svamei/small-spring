@@ -9,12 +9,13 @@ import com.svamei.springframework.beans.factory.BeanFactory;
 import com.svamei.springframework.beans.factory.BeanFactoryAware;
 import com.svamei.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import com.svamei.springframework.beans.factory.support.DefaultListableBeanFactory;
-import com.svamei.springframework.util.ClassUtils;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @ClassName DefaultAdvisorAutoProxyCreator
@@ -25,6 +26,8 @@ import java.util.Collection;
 public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPostProcessor, BeanFactoryAware {
 
     private DefaultListableBeanFactory beanFactory;
+
+    private final Set<Object> earlyProxyReferences = Collections.synchronizedSet(new HashSet<Object>());
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
@@ -46,6 +49,43 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
         return pvs;
     }
 
+    @Override
+    public Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
+        earlyProxyReferences.add(beanName);
+        return wrapIfNecessary(bean, beanName);
+    }
+
+    protected Object wrapIfNecessary(Object bean, String name) {
+
+        if (isInfrastructureClass(bean.getClass())) {
+            return bean;
+        }
+
+        Collection<AspectJExpressionPointcutAdvisor> advisors = beanFactory.getBeansOfType(AspectJExpressionPointcutAdvisor.class).values();
+
+        for (AspectJExpressionPointcutAdvisor advisor : advisors) {
+            ClassFilter classFilter = advisor.getPointcut().getClassFilter();
+
+            if (!classFilter.matches(bean.getClass())) {
+                continue;
+            }
+
+            AdvisedSupport advised = new AdvisedSupport();
+
+            TargetSource targetSource = new TargetSource(bean);
+            advised.setTargetSource(targetSource);
+            advised.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
+            advised.setInterceptor((MethodInterceptor) advisor.getAdvice());
+            advised.setProxyTargetClass(true);
+
+            // 返回代理对象
+            return new ProxyFactory(advised).getProxy();
+
+        }
+
+        return bean;
+    }
+
     private boolean isInfrastructureClass(Class<?> beanClass) {
         return Advice.class.isAssignableFrom(beanClass) || Pointcut.class.isAssignableFrom(beanClass)
                 || Advisor.class.isAssignableFrom(beanClass);
@@ -58,40 +98,11 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        Class beanClass = bean.getClass();
 
-        if (isInfrastructureClass(beanClass)) {
-            return bean;
+        if (!earlyProxyReferences.contains(beanName)) {
+            return wrapIfNecessary(bean, beanName);
         }
 
-        Collection<AspectJExpressionPointcutAdvisor> advisors = beanFactory.getBeansOfType(AspectJExpressionPointcutAdvisor.class).values();
-
-        for (AspectJExpressionPointcutAdvisor advisor : advisors) {
-            ClassFilter classFilter = advisor.getPointcut().getClassFilter();
-            if (!classFilter.matches(beanClass)) {
-                continue;
-            }
-
-            AdvisedSupport advised = new AdvisedSupport();
-
-            TargetSource targetSource = null;
-            try {
-                targetSource = new TargetSource(bean);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            advised.setTargetSource(targetSource);
-            advised.setInterceptor((MethodInterceptor) advisor.getAdvice());
-            advised.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
-
-            if (beanClass.getInterfaces().length == 0) {
-                advised.setProxyTargetClass(true);
-            }
-
-
-            return new ProxyFactory(advised).getProxy();
-        }
         return bean;
     }
 }
